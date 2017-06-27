@@ -1,10 +1,12 @@
 package scenes;
 
 import milkshake.assets.SpriteSheets;
+import milkshake.components.input.Key;
 import milkshake.core.Sprite;
 import milkshake.game.scene.camera.CameraPresets;
 import milkshake.game.scene.Scene;
 import milkshake.math.Vector2;
+import milkshake.Milkshake;
 import milkshake.utils.Color;
 import milkshake.utils.Globals;
 import motion.easing.Elastic;
@@ -19,7 +21,7 @@ class SimpleScene extends Scene
 
 	public function new()
 	{
-		super("TestScene", [ "assets/images/dino/stars.png" ], CameraPresets.DEFAULT, Color.BLUE);
+		super("TestScene", [ "assets/images/dino/stars.png" ], CameraPresets.DEFAULT, Color.Blue);
 	}
 
 	override public function create():Void
