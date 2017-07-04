@@ -1,7 +1,11 @@
 package scenes;
 
+import js.html.Float32Array;
 import milkshake.assets.SpriteSheets;
 import milkshake.components.input.Key;
+import milkshake.core.DisplayObject;
+import milkshake.core.Entity;
+import milkshake.core.Graphics;
 import milkshake.core.Sprite;
 import milkshake.game.scene.camera.CameraPresets;
 import milkshake.game.scene.Scene;
@@ -14,48 +18,141 @@ import pixi.core.textures.Texture;
 
 using milkshake.utils.TweenUtils;
 
-class SimpleScene extends Scene
+class Tile extends DisplayObject
 {
-	var world:Sprite;
-	var logo:Sprite;
+	public var verticies(default, null):Array<Vector2>;
+	public var uvs(default, null):Array<Vector2>;
+	public var indicies(default, null):Array<Int>;
 
 	public function new()
 	{
-		super("TestScene", [ "assets/images/dino/stars.png" ], CameraPresets.DEFAULT, Color.Blue);
+		super();
+
+		verticies = [
+			new Vector2(0, 0),
+			new Vector2(100, 0),
+			new Vector2(100, 100),
+			new Vector2(0, 100)
+		];
+
+		uvs = [
+			new Vector2(0, 0),
+			new Vector2(1, 0),
+			new Vector2(1, 1),
+			new Vector2(0, 1)
+		];
+
+		indicies = [
+			0,
+			1,
+			2,
+
+			0,
+			2,
+			3
+		];
+
+		var graphic = new Graphics();
+
+		graphic.graphics.beginFill(Color.White);
+		graphic.graphics.drawCircle(0, 0, 3);
+		graphic.graphics.drawCircle(100, 0, 3);
+		graphic.graphics.drawCircle(100, 100, 3);
+		graphic.graphics.drawCircle(0, 100, 3);
+
+		addNode(graphic);
+	}
+}
+
+class SimpleScene extends Scene
+{
+	public function new()
+	{
+		super("TestScene", [ "assets/images/grass.png" ], CameraPresets.DEFAULT, Color.Tomato);
+	}
+
+	var tiles:Array<Array<Tile>> = [[]];
+
+	function generateMap()
+	{
+		var list = [];
+
+		for (x in 0 ... 10)
+		{
+			tiles[x] = [];
+
+			for (y in 0 ... 10)
+			{
+				var tile  = new Tile();
+
+				tile.x = x * 100;
+				tile.y = y * 100;
+
+				tiles[x][y] = tile;
+
+				list.push(tile);
+				addNode(tile);
+			}
+		}
+
+		var verticies = [];
+
+		// list.reverse();
+
+		for(tile in list)
+		{
+			for(vert in tile.verticies)
+			{
+				verticies.push(vert.x + tile.x);
+				verticies.push(vert.y + tile.y);
+			}
+		}
+
+		var indicies = [];
+
+		for(tile in list)
+		{
+			for(indie in tile.indicies)
+			{
+
+				indicies.push((list.indexOf(tile) * 4 ) + indie);
+			}
+		}
+
+		var uvs = [];
+
+		for(tile in list)
+		{
+			for(uv in tile.uvs)
+			{
+				uvs.push(uv.x);
+				uvs.push(uv.y);
+			}
+		}
+
+		var mesh = new pixi.mesh.Mesh(
+			Texture.fromImage("assets/images/grass.png"), 
+			new Float32Array(verticies),
+			new Float32Array(uvs),
+			new js.html.Int16Array(indicies),
+			1
+		);
+
+		displayObject.addChildAt(mesh, 1);
 	}
 
 	override public function create():Void
 	{
 		super.create();
 
-		addNode(new Sprite(Texture.fromImage("assets/images/dino/stars.png")));
+		generateMap();
 
-		addNode(new Sprite(Texture.fromImage("assets/images/dino/moon.png")),
-		{
-			position: new Vector2(110, 105)
-		});
 
-		addNode(logo = new Sprite(Texture.fromImage("assets/images/dino/logo.png")),
-		{
-			anchor: Vector2.HALF,	
-			position: new Vector2(Globals.SCREEN_CENTER.x, 160)
-		});
-
-		addNode(world = new Sprite(Texture.fromImage("assets/images/dino/world.png")),
-		{
-			anchor: Vector2.HALF,
-			position: new Vector2(Globals.SCREEN_CENTER.x, Globals.SCREEN_HEIGHT + 200),
-			scale: Vector2.EQUAL(0.8)
-		});
 		
-		world.tweenFrom(2, { y: Globals.SCREEN_HEIGHT * 2 }).delay(1).ease(Elastic.easeOut);
-		logo.tweenFrom(1, { y: -200 }).delay(1).ease(Elastic.easeOut);
 	}
 
 	override public function update(deltaTime:Float):Void
 	{
 		super.update(deltaTime);
-
-		world.rotation += 0.001 * deltaTime;
 	}
 }
