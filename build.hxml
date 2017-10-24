@@ -3,5 +3,6 @@
 -cp src
 
 -lib milkshake
+-lib noisehx
 
 -js bin/app.js

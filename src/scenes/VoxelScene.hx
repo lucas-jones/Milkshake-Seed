@@ -15,6 +15,7 @@ import milkshake.Milkshake;
 import milkshake.utils.Color;
 import milkshake.utils.Globals;
 import motion.easing.Elastic;
+import noisehx.Perlin;
 import pixi.core.textures.Texture;
 import pixi.mesh.Mesh;
 
@@ -44,7 +45,7 @@ class ControleVoxel extends Voxel
 		super(position);
 
 		this.value = value;
-		this.active = value > 1;
+		this.active = value > 0.5;
 
 		above = new Voxel(new Vector2(position.x, position.y + (_size / 2)));
 		right = new Voxel(new Vector2(position.x + (_size / 2), position.y));
@@ -89,11 +90,22 @@ class Square extends Entity
 		if(topRight.active) this.config += 4;
 		if(bottomRight.active) this.config += 2;
 		if(bottomLeft.active) this.config += 1;
+
+		topLeft.index = -1;
+		topRight.index = -1;
+		bottomRight.index = -1;
+		bottomLeft.index = -1;
+		centreTop.index = -1;
+		centreRight.index = -1;
+		centreBottom.index = -1;
+		centreLeft.index = -1;
 	}
 }
 
 class VoxelWorld 
 {
+	public var noise:Perlin;
+
 	public var squares:Array<Array<Square>> = [[]];
 	var width:Int;
 	var height:Int;
@@ -101,6 +113,8 @@ class VoxelWorld
 	{
 		this.width = width;
 		this.height = height;
+		
+		noise = new Perlin();
 
 		var controlVoxels:Array<Array<ControleVoxel>> = [[]];
 
@@ -112,7 +126,7 @@ class VoxelWorld
 			{
 				var position = new Vector2(x * size + (size / 2), y * size + (size / 2));
 
-				controlVoxels[x][y] = new ControleVoxel(position, Math.random() * 2, size);
+				controlVoxels[x][y] = new ControleVoxel(position, noise.noise2d(x / 10, y / 10) + 1 / 2, size);
 			}
 		}
 
@@ -144,10 +158,10 @@ class VoxelWorld
 
 class VoxelScene extends Scene
 {
-	public static inline var XCOUNT:Int = 10;
-	public static inline var YCOUNT:Int = 10;
+	public static inline var XCOUNT:Int = 100;
+	public static inline var YCOUNT:Int = 100;
 
-	public static inline var SIZE:Int = 70;
+	public static inline var SIZE:Int = 10;
 
 	var world:VoxelWorld;
 
@@ -183,40 +197,40 @@ class VoxelScene extends Scene
 			}
 		}
 
-		for (x in 0 ... XCOUNT - 1)
-		{
-			for (y in 0 ... YCOUNT - 1)
-			{
-				graphics.graphics.lineStyle(0);
+		// for (x in 0 ... XCOUNT - 1)
+		// {
+		// 	for (y in 0 ... YCOUNT - 1)
+		// 	{
+		// 		graphics.graphics.lineStyle(0);
 
-				var tile = world.squares[x][y];
+		// 		var tile = world.squares[x][y];
 
-				var szi = 10;
+		// 		var szi = 10;
 
-				graphics.graphics.beginFill(Color.Black, tile.topLeft.active ? 1 : 0.2);
-				graphics.graphics.drawRect(tile.topLeft.x - (szi / 2), tile.topLeft.y - (szi / 2), szi, szi);
+		// 		graphics.graphics.beginFill(Color.Black, tile.topLeft.active ? 1 : 0.2);
+		// 		graphics.graphics.drawRect(tile.topLeft.x - (szi / 2), tile.topLeft.y - (szi / 2), szi, szi);
 
-				graphics.graphics.beginFill(Color.Black, tile.topRight.active ? 1 : 0.2);
-				graphics.graphics.drawRect(tile.topRight.x - (szi / 2), tile.topRight.y - (szi / 2), szi, szi);
+		// 		graphics.graphics.beginFill(Color.Black, tile.topRight.active ? 1 : 0.2);
+		// 		graphics.graphics.drawRect(tile.topRight.x - (szi / 2), tile.topRight.y - (szi / 2), szi, szi);
 
-				graphics.graphics.beginFill(Color.Black, tile.bottomLeft.active ? 1 : 0.2);
-				graphics.graphics.drawRect(tile.bottomLeft.x - (szi / 2), tile.bottomLeft.y - (szi / 2), szi, szi);
+		// 		graphics.graphics.beginFill(Color.Black, tile.bottomLeft.active ? 1 : 0.2);
+		// 		graphics.graphics.drawRect(tile.bottomLeft.x - (szi / 2), tile.bottomLeft.y - (szi / 2), szi, szi);
 
-				graphics.graphics.beginFill(Color.Black, tile.bottomRight.active ? 1 : 0.2);
-				graphics.graphics.drawRect(tile.bottomRight.x - (szi / 2), tile.bottomRight.y - (szi / 2), szi, szi);
+		// 		graphics.graphics.beginFill(Color.Black, tile.bottomRight.active ? 1 : 0.2);
+		// 		graphics.graphics.drawRect(tile.bottomRight.x - (szi / 2), tile.bottomRight.y - (szi / 2), szi, szi);
 
 
 
-				var centerSize = 3;
-				graphics.graphics.beginFill(Color.White, 1);
-				graphics.graphics.drawRect(tile.centreTop.x - (centerSize / 2), tile.centreTop.y - (centerSize / 2), centerSize, centerSize);
-				graphics.graphics.drawRect(tile.centreRight.x - (centerSize / 2), tile.centreRight.y - (centerSize / 2), centerSize, centerSize);
-				graphics.graphics.drawRect(tile.centreBottom.x - (centerSize / 2), tile.centreBottom.y - (centerSize / 2), centerSize, centerSize);
-				graphics.graphics.drawRect(tile.centreLeft.x - (centerSize / 2), tile.centreLeft.y - (centerSize / 2), centerSize, centerSize);
-			}
-		}
+		// 		var centerSize = 3;
+		// 		graphics.graphics.beginFill(Color.White, 1);
+		// 		graphics.graphics.drawRect(tile.centreTop.x - (centerSize / 2), tile.centreTop.y - (centerSize / 2), centerSize, centerSize);
+		// 		graphics.graphics.drawRect(tile.centreRight.x - (centerSize / 2), tile.centreRight.y - (centerSize / 2), centerSize, centerSize);
+		// 		graphics.graphics.drawRect(tile.centreBottom.x - (centerSize / 2), tile.centreBottom.y - (centerSize / 2), centerSize, centerSize);
+		// 		graphics.graphics.drawRect(tile.centreLeft.x - (centerSize / 2), tile.centreLeft.y - (centerSize / 2), centerSize, centerSize);
+		// 	}
+		// }
 
-		addNode(graphics);
+		// addNode(graphics);
 
 		
 
@@ -264,7 +278,7 @@ class VoxelScene extends Scene
 		mesh.indices = new Int16Array(triangles);
 		mesh.vertices = new Float32Array(verticies);
 		mesh.uvs = new Float32Array(uvs);
-		// mesh.dirty = true;
+		mesh.dirty = true;
 	}
 
 	function smooth(square:Square, a:Int, b:Int)
@@ -305,37 +319,81 @@ class VoxelScene extends Scene
 		return p;
 	}
 
+	function lerp(position:Vector2, a:ControleVoxel, b:ControleVoxel)
+	{
+		var p:Vector2 = new Vector2();
+
+		var mu:Float = (1 - a.value) / (b.value - a.value);
+
+		p.x = position.x + ((b.x - a.x) * mu);
+		p.y = position.y + ((b.y - a.y) * mu);
+
+		return p;
+	}
+
 	function triangluateSquare(square:Square)
 	{
 		switch(square.config)
 		{
-			case 1: meshFromPoints([ square.centreBottom, square.bottomLeft, square.centreLeft ]);
-			case 2: meshFromPoints([ square.centreRight, square.bottomRight, square.centreBottom ]);
-			case 4: meshFromPoints([ square.centreTop, square.topRight, square.centreRight ]);
-			case 8: meshFromPoints([ square.topLeft, square.centreTop, square.centreLeft ]);
+			case 1: meshFromPoints([ square.centreBottom, square.bottomLeft, square.centreLeft ],
+								   [ lerp(square.centreBottom.position, square.bottomLeft, square.bottomRight), square.bottomLeft.position, lerp(square.centreLeft.position, square.topLeft, square.bottomLeft) ]);
 
-			case 3: meshFromPoints([ square.centreRight, square.bottomRight, square.bottomLeft, square.centreLeft ]);
-			case 6: meshFromPoints([ square.centreTop, square.topRight, square.bottomRight, square.centreBottom ]);
-			case 9: meshFromPoints([ square.topLeft, square.centreTop, square.centreBottom, square.bottomLeft ]);
-			case 12: meshFromPoints([ square.topLeft, square.topRight, square.centreRight, square.centreLeft ]);
+			case 2: meshFromPoints([ square.centreRight, square.bottomRight, square.centreBottom ],
+								   [ square.centreRight.position, square.bottomRight.position, square.centreBottom.position ]);
 
-			case 5: meshFromPoints([ square.centreTop, square.topRight, square.centreRight, square.centreBottom, square.bottomLeft, square.centreLeft ]);
-			case 10: meshFromPoints([ square.topLeft, square.centreTop, square.centreRight, square.bottomRight, square.centreBottom, square.centreLeft ]);
+			case 4: meshFromPoints([ square.centreTop, square.topRight, square.centreRight ],
+								   [ square.centreTop.position, square.topRight.position, square.centreRight.position ]);
 
-			case 7: meshFromPoints([ square.centreTop, square.topRight, square.bottomRight, square.bottomLeft, square.centreLeft ]);
-			case 11: meshFromPoints([ square.topLeft, square.centreTop, square.centreRight, square.bottomRight, square.bottomLeft ]);
-			case 13: meshFromPoints([ square.topLeft, square.topRight, square.centreRight, square.centreBottom, square.bottomLeft ]);
-			case 14: meshFromPoints([ square.topLeft, square.topRight, square.bottomRight, square.centreBottom, square.centreLeft ]);
+			case 8: meshFromPoints([ square.topLeft, square.centreTop, square.centreLeft ],
+								   [ square.topLeft.position, square.centreTop.position, square.centreLeft.position ]);
 
-			case 15: meshFromPoints([ square.topLeft, square.topRight, square.bottomRight, square.bottomLeft ]);
+
+
+
+			case 3: meshFromPoints([ square.centreRight, square.bottomRight, square.bottomLeft, square.centreLeft ],
+								   [ square.centreRight.position, square.bottomRight.position, square.bottomLeft.position, square.centreLeft.position ]);
+
+			case 6: meshFromPoints([ square.centreTop, square.topRight, square.bottomRight, square.centreBottom ],
+								   [ square.centreTop.position, square.topRight.position, square.bottomRight.position, square.centreBottom.position ]);
+
+			case 9: meshFromPoints([ square.topLeft, square.centreTop, square.centreBottom, square.bottomLeft ],
+								   [ square.topLeft.position, square.centreTop.position, square.centreBottom.position, square.bottomLeft.position ]);
+
+			case 12: meshFromPoints([ square.topLeft, square.topRight, square.centreRight, square.centreLeft ],
+								   [ square.topLeft.position, square.topRight.position, square.centreRight.position, square.centreLeft.position ]);
+
+
+			case 5: meshFromPoints([ square.centreTop, square.topRight, square.centreRight, square.centreBottom, square.bottomLeft, square.centreLeft ],
+								   [ square.centreTop.position, square.topRight.position, square.centreRight.position, square.centreBottom.position, square.bottomLeft.position, square.centreLeft.position ]);
+
+			case 10: meshFromPoints([ square.topLeft, square.centreTop, square.centreRight, square.bottomRight, square.centreBottom, square.centreLeft ],
+								   [ square.topLeft.position, square.centreTop.position, square.centreRight.position, square.bottomRight.position, square.centreBottom.position, square.centreLeft.position ]);
+
+
+			case 7: meshFromPoints([ square.centreTop, square.topRight, square.bottomRight, square.bottomLeft, square.centreLeft ],
+								   [ square.centreTop.position, square.topRight.position, square.bottomRight.position, square.bottomLeft.position, square.centreLeft.position ]);
+
+			case 11: meshFromPoints([ square.topLeft, square.centreTop, square.centreRight, square.bottomRight, square.bottomLeft ],
+								   [ square.topLeft.position, square.centreTop.position, square.centreRight.position, square.bottomRight.position, square.bottomLeft.position ]);
+
+			case 13: meshFromPoints([ square.topLeft, square.topRight, square.centreRight, square.centreBottom, square.bottomLeft ],
+								   [ square.topLeft.position, square.topRight.position, square.centreRight.position, square.centreBottom.position, square.bottomLeft.position ]);
+
+			case 14: meshFromPoints([ square.topLeft, square.topRight, square.bottomRight, square.centreBottom, square.centreLeft ],
+								   [ square.topLeft.position, square.topRight.position, square.bottomRight.position, square.centreBottom.position, square.centreLeft.position ]);
+
+
+			case 15: meshFromPoints([ square.topLeft, square.topRight, square.bottomRight, square.bottomLeft ],
+								   [ square.topLeft.position, square.topRight.position, square.bottomRight.position, square.bottomLeft.position ]);
+
 		}
 	}
 
 
 
-	function meshFromPoints(points:Array<Voxel>)
+	function meshFromPoints(points:Array<Voxel>, positions:Array<Vector2>)
 	{
-		asignVerts(points);
+		asignVerts(points, positions);
 
 		if(points.length >= 3) createTri(points[0], points[1], points[2]);
 		if(points.length >= 4) createTri(points[0], points[2], points[3]);
@@ -343,12 +401,12 @@ class VoxelScene extends Scene
 		if(points.length >= 6) createTri(points[0], points[4], points[5]);
 	}
 
-	function asignVerts(nodes:Array<Voxel>)
+	function asignVerts(nodes:Array<Voxel>, positions:Array<Vector2>)
 	{
 		for (i in 0 ... nodes.length) {
 			if(nodes[i].index == -1) nodes[i].index = vertices.length;
 
-			vertices.push(nodes[i].position);
+			vertices.push(positions[i]);
 		}
 	}
 
@@ -372,11 +430,13 @@ class VoxelScene extends Scene
 
 		// index++;
 
-		// if(index > 100)
+		// if(index > 10)
 		// {
 		// 	index = 0;
+		// 	var x = Math.floor(1 + Math.random() * (XCOUNT - 2));
+		// 	var y = Math.floor(1 + Math.random() * (YCOUNT - 2));
 
-		// 	world.squares[8][8].topLeft.active = !world.squares[8][8].topLeft.active;
+		// 	world.squares[x][y].topLeft.active = !world.squares[x][y].topLeft.active;
 		// 	world.refresh();
 
 		// 	regenerateMesh();
